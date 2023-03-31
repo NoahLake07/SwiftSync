@@ -10,7 +10,16 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../Dependencies/FreshUI.jar!/" />
+          <root url="jar://$MODULE_DIR$/../Assassin-Game-App/dependencies/Dialog.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../FreshUI/out/artifacts/FreshUI_jar/FreshUI.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

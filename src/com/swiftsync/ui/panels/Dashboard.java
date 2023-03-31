@@ -1,4 +1,4 @@
-package com.swiftsync.panels;
+package com.swiftsync.ui.panels;
 
 import freshui.graphics.FPanel;
 
@@ -9,8 +9,6 @@ public class Dashboard extends FPanel {
     public Dashboard(){
         super();
 
-        JLabel label = new JLabel();
-        this.add
     }
 
 }
