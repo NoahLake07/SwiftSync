@@ -1,7 +1,8 @@
 package com.swiftsync.operations;
 
 import com.swiftsync.data.ProcessDuration;
-import com.swiftsync.ui.process.ProcessLink;
+import com.swiftsync.program.SwiftSync;
+import com.swiftsync.ui.process.BackupProcessLink;
 import freshui.io.Printer;
 
 import java.io.*;
@@ -12,7 +13,7 @@ import java.util.zip.ZipOutputStream;
 public class Backup implements Runnable {
 
     // * com.swiftsync.program.SwiftSync UI linking parent
-    private ProcessLink myDriver = null;
+    private BackupProcessLink myDriver = null;
 
     // * background variables
     private File parentFile;
@@ -53,7 +54,7 @@ public class Backup implements Runnable {
         this(parent,copyTo,null,enableProgressShare);
     }
 
-    public Backup(File parent, String copyTo, ProcessLink process, boolean enableProgressShare){
+    public Backup(File parent, String copyTo, BackupProcessLink process, boolean enableProgressShare){
         this.parentFile = parent;
         this.backupLocation = copyTo;
         this.progressShare = enableProgressShare;
@@ -80,12 +81,16 @@ public class Backup implements Runnable {
         this.setDebug(false);
     }
 
-    public void setProcess(ProcessLink process){
+    public void setProcess(BackupProcessLink process){
         this.myDriver = process;
     }
 
     public int getOverallStatus(){
         return overallStatus;
+    }
+
+    public double getProgress(){
+        return taskProgress;
     }
 
     // endregion
@@ -97,6 +102,7 @@ public class Backup implements Runnable {
         } else {
             ProcessDuration duration = new ProcessDuration();
 
+            // subtract values
 
             return duration;
         }
@@ -109,14 +115,17 @@ public class Backup implements Runnable {
     public void run() {
         if(verifyParent()){
             this.overallStatus = Status.INITIALIZING;
+            myDriver.initializingBackup();
             if(debug) System.out.println("\t<debug/ PARENT IS FILE");
             try { this.backup(); } catch (IOException e) {
                 this.overallStatus = Status.INITIALIZING_ERROR;
+                myDriver.initializingError();
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
         } else if (parentFile.isDirectory()) {
             this.overallStatus = Status.INITIALIZING;
+            myDriver.initializingBackup();
             if(debug) System.out.println("\t<debug/ PARENT IS DIRECTORY");
             try { this.directoryBackup(); } catch (IOException e) {
                 e.printStackTrace();
@@ -124,6 +133,7 @@ public class Backup implements Runnable {
             }
         } else {
             this.overallStatus = Status.INITIALIZING_ERROR;
+            myDriver.initializingError();
             throw new Error("Specified Parent File Does Not Exist.");
         }
     }
@@ -138,19 +148,27 @@ public class Backup implements Runnable {
         int predictedOperations = (int) (parentFile.length()/1024);
         if(debug) System.out.println("\t PREDICTED 1024BYTE OPERATIONS: " + predictedOperations);
 
+        // create file
+        backupLocation += SwiftSync.Util.getFileBackupName(parentFile.getName());
+        if(debug) Printer.println("\tBackup Pathname set to: " + backupLocation);
+
+        myDriver.startedBackup();
+
         InputStream is = null;
         OutputStream os = null;
         try {
             is = new FileInputStream(parentFile);
-            os = new FileOutputStream(backupLocation);
+            os = new FileOutputStream(new File(backupLocation));
             byte[] buffer = new byte[1024];
             int length;
             this.overallStatus = Status.BACKUP_IN_PROGRESS;
             while ((length = is.read(buffer)) > 0) {
                 os.write(buffer, 0, length);
                 updateProgress(predictedOperations, ++completedOperations);
+                myDriver.byteChunkTransferred();
             }
         } catch (IOException e) {
+            this.myDriver.backupError();
             throw new RuntimeException(e);
         } finally {
             is.close();
@@ -161,6 +179,7 @@ public class Backup implements Runnable {
 
         // end time set
         this.endTime = LocalDateTime.now();
+        this.myDriver.finishingProcess();
     }
 
     private void directoryBackup() throws IOException {
@@ -174,7 +193,11 @@ public class Backup implements Runnable {
         if(debug) System.out.println("\t PARENT FILE LENGTH: " + Util.directorySize(parentFile));
         if(debug) System.out.println("\t PREDICTED 1024 BYTE OPERATIONS: " + predictedOperations);
 
-        FileOutputStream fos = new FileOutputStream(backupLocation);
+        // create file
+        backupLocation += SwiftSync.Util.getFileBackupName(parentFile.getName());
+        if(debug) Printer.println("\tBackup Pathname set to: " + backupLocation);
+
+        FileOutputStream fos = new FileOutputStream(new File(backupLocation));
         ZipOutputStream zipOut = new ZipOutputStream(fos);
         this.overallStatus = Status.BACKUP_IN_PROGRESS;
         zipFile(parentFile, parentFile.getName(), zipOut,completedOperations,predictedOperations);
@@ -182,6 +205,8 @@ public class Backup implements Runnable {
         fos.close();
 
         backupStatus = verifyBackup();
+
+        this.myDriver.finishingProcess();
 
         // end time set
         this.endTime = LocalDateTime.now();
@@ -213,6 +238,7 @@ public class Backup implements Runnable {
         while ((length = fis.read(bytes)) >= 0) {
             zipOut.write(bytes, 0, length);
             updateProgress(pO,++cO);
+            myDriver.byteChunkTransferred();
         }
         fis.close();
     }
@@ -220,9 +246,6 @@ public class Backup implements Runnable {
 
     private void updateProgress(double pO, double cO){
         taskProgress = Math.round(cO/pO*100);
-        if(debug){
-            //System.out.println("\t<debug: CURRENT TASK PROGRESS: " + taskProgress + "%");
-        }
     }
 
     // endregion
@@ -234,6 +257,7 @@ public class Backup implements Runnable {
 
     private int verifyBackup(){
         this.overallStatus = Status.PREPARING_VERIFICATION;
+        myDriver.initializingVerification();
 
         // fetch sizes of original file and new file
         double originalSize = parentFile.length();
@@ -245,8 +269,10 @@ public class Backup implements Runnable {
             Printer.reset();
         }
 
-        // check for file size difference
+        myDriver.verificationStarted();
 
+        // check for file size difference
+        //TODO check for file differences
 
         return 0;
     }

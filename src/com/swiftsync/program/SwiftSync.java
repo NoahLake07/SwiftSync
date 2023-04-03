@@ -97,4 +97,21 @@ public class SwiftSync extends FreshUI implements Pages {
         public static void main (String[]args){
             new SwiftSync().start();
         }
+
+        public static class Util {
+
+        public static String getFileBackupName(String originalName){
+            String fileName = null, fileExtension = null;
+            for (int i = originalName.length()-1; i >= 0; i--) {
+                if(originalName.charAt(i) == '.'){
+                    fileName = originalName.substring(0,i);
+                    fileExtension = originalName.substring(i);
+                    break;
+                }
+            }
+
+            return "/" + fileName + " Backup" + fileExtension;
+        }
+
+        }
 }

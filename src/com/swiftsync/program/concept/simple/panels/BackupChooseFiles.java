@@ -5,6 +5,7 @@ import freshui.graphics.FButton;
 import freshui.graphics.FPanel;
 import freshui.gui.Toggle;
 import freshui.gui.input.Input;
+import freshui.io.Printer;
 import freshui.program.FreshProgram;
 
 import javax.swing.*;
@@ -14,6 +15,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 
+import static com.swiftsync.program.concept.simple.SimpleSwiftSync.BACKUP_IN_PROGRESS;
+
 public class BackupChooseFiles extends SimpleSwiftSyncPanel {
 
     File from, to;
@@ -21,6 +24,7 @@ public class BackupChooseFiles extends SimpleSwiftSyncPanel {
     public BackupChooseFiles(SimpleSwiftSync parent){
         super(parent);
 
+        this.setVisible(false);
         Input fromLoc = new Input("From:",parent);
         Input toLoc = new Input("To:",parent);
         fromLoc.setWidth(400);
@@ -93,7 +97,34 @@ public class BackupChooseFiles extends SimpleSwiftSyncPanel {
         this.add(doDebugLogsLabel,30,230);
         this.add(doDebugLogs, 200, 230);
 
-        FButton startBtn = new FButton("START BACKUP PROCESS", 500,100);
+        FButton startBtn = new FButton("START BACKUP PROCESS", 500,70);
+        MouseListener startProcessMSL = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(doDebugLogs.getStatus()){
+                    Printer.println("Process Started...");
+                }
+
+                // forward process to back up screen
+                BackupProcess.parent = from;
+                BackupProcess.destination = to;
+                BackupProcess.doProgressShare = doProgressShare.getStatus();
+                BackupProcess.doDebug = doDebugLogs.getStatus();
+                parent.setPageTo(BACKUP_IN_PROGRESS); // parent main will auto start backup process
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                startBtn.setColor(SimpleSwiftSync.dashBtnHover);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                startBtn.setColor(SimpleSwiftSync.dashBtnDefault);
+            }
+        };
+        startBtn.addMouseListener(startProcessMSL);
         add(startBtn,30,400);
 
     }

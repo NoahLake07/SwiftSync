@@ -16,8 +16,10 @@ public class SimpleSwiftSyncPanel extends FPanel {
     private FButton returnToHomeBtn = new FButton("Return to Home",100,20);
     private JLabel pageLabel = new JLabel("Untitled SimpleSwiftSync Page");
     private int pageLabelPadding = 30;
+    SimpleSwiftSync parent;
 
     public SimpleSwiftSyncPanel(SimpleSwiftSync parent){
+        this.parent = parent;
         this.setProgramParent(parent);
 
         this.setWidth(parent.getWidth());
@@ -27,7 +29,7 @@ public class SimpleSwiftSyncPanel extends FPanel {
         MouseListener returnToHomeAdapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                parent.setPageTo(SimpleSwiftSync.DASHBOARD);
+                buttonClicked();
             }
 
             @Override
@@ -45,6 +47,10 @@ public class SimpleSwiftSyncPanel extends FPanel {
         pageLabel.setFont(new Font("Sans Serif", Font.BOLD, 20));
         this.add(pageLabel, (int) (returnToHomeBtn.getX()+returnToHomeBtn.getWidth() + pageLabelPadding*2), 30);
 
+    }
+
+    public void buttonClicked(){
+        parent.setPageTo(SimpleSwiftSync.DASHBOARD);
     }
 
     @Override

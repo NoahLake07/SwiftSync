@@ -1,6 +1,8 @@
 package com.swiftsync.program.concept;
 
 import com.swiftsync.operations.Backup;
+import com.swiftsync.program.SwiftSync;
+import com.swiftsync.ui.process.BackupProcessLink;
 import freshui.io.Printer;
 
 import java.io.File;
@@ -95,9 +97,77 @@ public class Test {
         Printer.reset();
     }
 
+    public static void copyNameTest(){
+        System.out.println(SwiftSync.Util.getFileBackupName(new File("/Users/noahlake/Desktop/Broadcast Paused Image.png").getName()));
+    }
+
+    public static void backupTest(){
+        BackupProcessLink bpl = new BackupProcessLink() {
+            @Override
+            public void initializingBackup() {
+
+            }
+
+            @Override
+            public void startedBackup() {
+
+            }
+
+            @Override
+            public void byteChunkTransferred() {
+
+            }
+
+            @Override
+            public void initializingVerification() {
+
+            }
+
+            @Override
+            public void verificationStarted() {
+
+            }
+
+            @Override
+            public void finishingProcess() {
+
+            }
+
+            @Override
+            public void initializingError() {
+
+            }
+
+            @Override
+            public void backupError() {
+
+            }
+
+            @Override
+            public void initializingVerificationError() {
+
+            }
+
+            @Override
+            public void unknownErrorOccurred() {
+
+            }
+        };
+
+        Backup backup = new Backup(new File("/Users/noahlake/Desktop/Broadcast Paused Image.png"), "/Users/noahlake/Desktop/", bpl,true);
+        backup.enableDebug();
+        backup.run();
+
+        Printer.setColor(Printer.YELLOW);
+        System.out.println("\t      START TIME: " + backup.startTime);
+        System.out.println("\t        END TIME: " + backup.endTime);
+        Printer.setColor(Printer.GREEN);
+        System.out.println("\tPROCESS DURATION:\t\t" + backup.getDuration().toString());
+        Printer.reset();
+    }
+
     public static void main(String[] args) {
-        backup(new File("/Users/NL21320/Desktop/complexFileA"),
-                                "/Users/NL21320/Desktop/complexFileA copy");
+        backupTest();
     }
 
 }

@@ -4,12 +4,9 @@ import com.swiftsync.program.concept.simple.panels.BackupChooseFiles;
 import com.swiftsync.program.concept.simple.panels.BackupFinished;
 import com.swiftsync.program.concept.simple.panels.BackupProcess;
 import com.swiftsync.program.concept.simple.panels.SimpleSwiftSyncPanel;
-import com.swiftsync.ui.BasicBackupProgram;
 import freshui.FreshUI;
 import freshui.graphics.FButton;
-import freshui.graphics.FPanel;
 import freshui.gui.Header;
-import freshui.io.ConsoleColor;
 import freshui.io.Printer;
 import freshui.util.FColor;
 
@@ -26,12 +23,14 @@ public class SimpleSwiftSync extends FreshUI {
     private Header header;
 
     public static final int     BACKUP_CHOOSE_FILES_PAGE = 101,
-                                DASHBOARD = 100;
+                                DASHBOARD = 100,
+                                BACKUP_IN_PROGRESS = 102;
     public static final int DASH_BTN_WIDTH = 200, DASH_BTN_HEIGHT = 50;
     public static final int    DASH_BTN_LEFT_PADDING = 100,
                                 DASH_BTN_HEADER_PADDING = 50,
                                 DASH_BTN_Y_SPACING = 10;
-    private SimpleSwiftSyncPanel backupChooseFilesPanel, backupProcessPanel, backupFinishedPanel;
+    private SimpleSwiftSyncPanel backupChooseFilesPanel, backupFinishedPanel;
+    private BackupProcess backupProcessPanel;
 
     public SimpleSwiftSync(){
         // instantiate all simple values
@@ -66,6 +65,7 @@ public class SimpleSwiftSync extends FreshUI {
         backupChooseFilesPanel.setLabel("Choose File Host/Backup Locations");
 
         backupProcessPanel = new BackupProcess(this);
+        backupProcessPanel.setVisible(false);
         backupFinishedPanel = new BackupFinished(this);
 
         add(header,0,0);
@@ -85,6 +85,11 @@ public class SimpleSwiftSync extends FreshUI {
 
             case(BACKUP_CHOOSE_FILES_PAGE) -> {
                 backupChooseFilesPanel.setVisible(true);
+            }
+
+            case(BACKUP_IN_PROGRESS) -> {
+                backupProcessPanel.setVisible(true);
+                backupProcessPanel.run();
             }
 
             default -> {
